@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>יומן קול</title>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="יומן קול">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="stylesheet" href="css/style.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<header class="topbar">
+  <h1 id="pageTitle">הקלטה</h1>
+</header>
+
+<main id="app">
+
+  <!-- ================= RECORD VIEW ================= -->
+  <section id="view-record" class="view active">
+    <div class="record-stage">
+      <div class="timer" id="timerDisplay">00:00</div>
+      <div class="status-line" id="statusLine">מוכנה להקליט</div>
+
+      <div class="record-controls">
+        <button id="btnRecord" class="btn-record" aria-label="הקלטה">
+          <span class="rec-dot"></span>
+        </button>
+        <div id="activeControls" class="active-controls hidden">
+          <button id="btnPause" class="btn-round btn-pause">השהה</button>
+          <button id="btnStop" class="btn-round btn-stop">עצור</button>
+        </div>
+      </div>
+
+      <div class="goal-hint">היעד היומי: 5 דקות לפחות</div>
+    </div>
+
+    <!-- shown right after saving a recording -->
+    <div id="postSave" class="post-save hidden">
+      <div class="post-save-card">
+        <div class="post-save-title" id="postSaveTitle"></div>
+        <input type="text" id="postSaveNotes" placeholder="הוסיפי כותרת / הערה (לא חובה)">
+        <button id="postSaveDone" class="btn-primary">סיימתי</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CALENDAR VIEW ================= -->
+  <section id="view-calendar" class="view">
+    <div class="cal-toggle">
+      <button id="calModeMonth" class="seg active">חודש</button>
+      <button id="calModeWeek" class="seg">שבוע</button>
+    </div>
+
+    <div class="cal-nav">
+      <button id="calPrev" class="nav-arrow">‹</button>
+      <div id="calLabel" class="cal-label">יולי 2026</div>
+      <button id="calNext" class="nav-arrow">›</button>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><i class="dot green"></i> 5+ דק'</span>
+      <span class="legend-item"><i class="dot yellow"></i> פחות מ-5 דק'</span>
+      <span class="legend-item"><i class="dot red"></i> לא הוקלט</span>
+    </div>
+
+    <div id="calGrid" class="cal-grid"></div>
+  </section>
+
+  <!-- ================= DAY DETAIL SHEET ================= -->
+  <div id="dayDetail" class="sheet hidden">
+    <div class="sheet-backdrop"></div>
+    <div class="sheet-content">
+      <div class="sheet-handle"></div>
+      <h2 id="dayDetailTitle"></h2>
+      <div id="dayDetailSummary" class="day-summary"></div>
+      <div id="dayDetailList" class="rec-list"></div>
+      <button id="dayDetailClose" class="btn-secondary">סגירה</button>
+    </div>
+  </div>
+
+  <!-- ================= LIST VIEW ================= -->
+  <section id="view-list" class="view">
+    <div id="allList" class="rec-list"></div>
+    <div id="emptyList" class="empty-state hidden">עדיין אין הקלטות</div>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <button class="tab active" data-view="record">
+    <span class="tab-icon">🎙️</span><span>הקלטה</span>
+  </button>
+  <button class="tab" data-view="calendar">
+    <span class="tab-icon">📅</span><span>לוח שנה</span>
+  </button>
+  <button class="tab" data-view="list">
+    <span class="tab-icon">📋</span><span>רשימה</span>
+  </button>
+</nav>
+
+<div id="toast" class="toast hidden"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
