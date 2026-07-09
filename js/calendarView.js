@@ -193,6 +193,12 @@ dayDetail.querySelector('.sheet-backdrop').addEventListener('click', closeDayDet
 dayDetailPrev.addEventListener('click', () => navigateDay(-1));
 dayDetailNext.addEventListener('click', () => navigateDay(1));
 
+document.addEventListener('recording-saved', () => {
+  if (selectedDate && !dayDetail.classList.contains('hidden')) {
+    renderSheetBody(selectedDate);
+  }
+});
+
 export function initCalendarView() {
   render();
 }

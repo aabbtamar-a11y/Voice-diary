@@ -105,3 +105,13 @@ export async function getRecording(id) {
     req.onerror = () => reject(req.error);
   });
 }
+
+export async function deleteRecording(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}

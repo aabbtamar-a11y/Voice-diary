@@ -1,4 +1,4 @@
-import { updateRecording } from './db.js';
+import { updateRecording, deleteRecording } from './db.js';
 import { uploadRecording } from './drive.js';
 import { formatDurationShort, toast } from './utils.js';
 
@@ -71,8 +71,23 @@ export function createRecItemElement(rec) {
     }
   });
 
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'btn-delete';
+  deleteBtn.textContent = '🗑';
+  deleteBtn.setAttribute('aria-label', 'מחיקת הקלטה');
+  deleteBtn.addEventListener('click', async () => {
+    const ok = window.confirm(`למחוק את ההקלטה "${rec.title}"? לא ניתן לשחזר.`);
+    if (!ok) return;
+    await deleteRecording(rec.id);
+    URL.revokeObjectURL(audio.src);
+    el.remove();
+    toast('ההקלטה נמחקה');
+    document.dispatchEvent(new CustomEvent('recording-saved'));
+  });
+
   controls.appendChild(audio);
   controls.appendChild(uploadBtn);
+  controls.appendChild(deleteBtn);
 
   el.appendChild(header);
   el.appendChild(notes);
