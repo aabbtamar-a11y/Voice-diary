@@ -1,5 +1,6 @@
 import { updateRecording, deleteRecording } from './db.js';
 import { uploadRecording } from './drive.js';
+import { trimAudioBlob } from './trim.js';
 import { formatDurationShort, toast } from './utils.js';
 
 export function createRecItemElement(rec) {
@@ -71,6 +72,11 @@ export function createRecItemElement(rec) {
     }
   });
 
+  const trimBtn = document.createElement('button');
+  trimBtn.className = 'btn-trim';
+  trimBtn.textContent = '✂️';
+  trimBtn.setAttribute('aria-label', 'חיתוך הקלטה');
+
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'btn-delete';
   deleteBtn.textContent = '🗑';
@@ -87,11 +93,105 @@ export function createRecItemElement(rec) {
 
   controls.appendChild(audio);
   controls.appendChild(uploadBtn);
+  controls.appendChild(trimBtn);
   controls.appendChild(deleteBtn);
+
+  const trimPanel = document.createElement('div');
+  trimPanel.className = 'trim-panel hidden';
+
+  const startRow = document.createElement('div');
+  startRow.className = 'trim-row';
+  const startLabel = document.createElement('label');
+  startLabel.textContent = 'שמרי מ־(שנ׳)';
+  const startInput = document.createElement('input');
+  startInput.type = 'number';
+  startInput.min = '0';
+  startInput.step = '1';
+  startInput.value = '0';
+  startRow.appendChild(startLabel);
+  startRow.appendChild(startInput);
+
+  const endRow = document.createElement('div');
+  endRow.className = 'trim-row';
+  const endLabel = document.createElement('label');
+  endLabel.textContent = 'עד־(שנ׳)';
+  const endInput = document.createElement('input');
+  endInput.type = 'number';
+  endInput.min = '0';
+  endInput.step = '1';
+  endInput.value = String(rec.durationSec);
+  endRow.appendChild(endLabel);
+  endRow.appendChild(endInput);
+
+  const trimActions = document.createElement('div');
+  trimActions.className = 'trim-actions';
+  const trimApplyBtn = document.createElement('button');
+  trimApplyBtn.className = 'btn-primary';
+  trimApplyBtn.textContent = 'בצע חיתוך';
+  const trimCancelBtn = document.createElement('button');
+  trimCancelBtn.className = 'btn-secondary';
+  trimCancelBtn.textContent = 'ביטול';
+  trimActions.appendChild(trimApplyBtn);
+  trimActions.appendChild(trimCancelBtn);
+
+  trimPanel.appendChild(startRow);
+  trimPanel.appendChild(endRow);
+  trimPanel.appendChild(trimActions);
+
+  trimBtn.addEventListener('click', () => {
+    startInput.value = '0';
+    endInput.value = String(Math.round(rec.durationSec));
+    trimPanel.classList.toggle('hidden');
+  });
+  trimCancelBtn.addEventListener('click', () => {
+    trimPanel.classList.add('hidden');
+  });
+  trimApplyBtn.addEventListener('click', async () => {
+    const startSec = Number(startInput.value);
+    const endSec = Number(endInput.value);
+    if (!(startSec >= 0) || !(endSec > startSec) || endSec > rec.durationSec + 1) {
+      toast('טווח לא תקין');
+      return;
+    }
+    trimApplyBtn.disabled = true;
+    trimApplyBtn.textContent = 'חותכת…';
+    try {
+      const { blob: newBlob, durationSec: newDuration } = await trimAudioBlob(rec.blob, startSec, endSec);
+      rec.blob = newBlob;
+      rec.durationSec = newDuration;
+      rec.mimeType = 'audio/wav';
+      rec.uploaded = false;
+      rec.driveFileId = null;
+      rec.driveLink = null;
+      await updateRecording(rec.id, {
+        blob: newBlob,
+        durationSec: newDuration,
+        mimeType: 'audio/wav',
+        uploaded: false,
+        driveFileId: null,
+        driveLink: null,
+      });
+
+      URL.revokeObjectURL(audio.src);
+      audio.src = URL.createObjectURL(newBlob);
+      duration.textContent = formatDurationShort(newDuration);
+      renderUploadBtn(uploadBtn, rec);
+      trimPanel.classList.add('hidden');
+      toast('ההקלטה נחתכה ✓');
+      document.dispatchEvent(new CustomEvent('recording-saved'));
+    } catch (err) {
+      console.error(err);
+      toast('החיתוך נכשל');
+    } finally {
+      trimApplyBtn.disabled = false;
+      trimApplyBtn.textContent = 'בצע חיתוך';
+    }
+  });
 
   el.appendChild(header);
   el.appendChild(notes);
   el.appendChild(controls);
+  el.appendChild(trimPanel);
 
   return el;
 }

@@ -408,14 +408,51 @@ body {
 .btn-upload.uploading { background: var(--yellow); color: #332900; }
 .btn-upload a { color: inherit; text-decoration: none; }
 
-.btn-delete {
+.btn-delete, .btn-trim {
   border: none;
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 14px;
   background: #2c2c2e;
-  color: var(--red);
   flex-shrink: 0;
+}
+.btn-delete { color: var(--red); }
+
+.trim-panel {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #2c2c2e;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.trim-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.trim-row input {
+  width: 80px;
+  background: #2c2c2e;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+}
+.trim-actions {
+  display: flex;
+  gap: 8px;
+}
+.trim-actions button {
+  flex: 1;
+  width: auto;
+  padding: 10px;
+  font-size: 13px;
 }
 
 .empty-state {
