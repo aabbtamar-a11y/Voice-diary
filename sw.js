@@ -1,4 +1,4 @@
-const CACHE_NAME = 'voice-diary-v1';
+const CACHE_NAME = 'voice-diary-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -32,20 +32,21 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Network-first: always try to fetch the latest version; fall back to cache only when offline.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return; // let Google API calls pass through untouched
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((res) => {
-        if (res.ok && event.request.method === 'GET') {
+    fetch(event.request)
+      .then((res) => {
+        if (res.ok) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return res;
-      }).catch(() => cached);
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });
