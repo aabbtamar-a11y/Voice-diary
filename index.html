@@ -81,8 +81,14 @@
     <div class="sheet-backdrop"></div>
     <div class="sheet-content">
       <div class="sheet-handle"></div>
-      <h2 id="dayDetailTitle"></h2>
-      <div id="dayDetailSummary" class="day-summary"></div>
+      <div class="sheet-day-nav">
+        <button id="dayDetailPrev" class="day-nav-btn" aria-label="יום קודם">‹</button>
+        <div class="sheet-day-nav-title">
+          <h2 id="dayDetailTitle"></h2>
+          <div id="dayDetailSummary" class="day-summary"></div>
+        </div>
+        <button id="dayDetailNext" class="day-nav-btn" aria-label="יום הבא">›</button>
+      </div>
       <div id="dayDetailList" class="rec-list"></div>
       <button id="dayDetailClose" class="btn-secondary">סגירה</button>
     </div>

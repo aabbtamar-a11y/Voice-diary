@@ -7,6 +7,7 @@
   --gray: #2c2c2e;
   --card: #1c1c1e;
   --text-dim: #8e8e93;
+  --accent: #0a84ff;
   color-scheme: dark;
 }
 
@@ -262,6 +263,13 @@ body {
 .cal-day.yellow { background: var(--yellow); color: #332900; }
 .cal-day.red { background: #3a1210; color: #ffb3ac; }
 .cal-day.empty { background: transparent; }
+.cal-day.selected {
+  box-shadow: inset 0 0 0 3px var(--accent);
+  transform: scale(1.06);
+}
+.cal-day.selected.today {
+  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 5px #fff;
+}
 
 /* week view */
 .week-row {
@@ -276,6 +284,12 @@ body {
   background: var(--card);
   border-radius: 12px;
   padding: 12px 14px;
+  box-shadow: none;
+}
+.week-day-card.today { box-shadow: inset 0 0 0 2px #fff; }
+.week-day-card.selected { box-shadow: inset 0 0 0 3px var(--accent); }
+.week-day-card.selected.today {
+  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 5px #fff;
 }
 .week-day-card .bar {
   width: 8px;
@@ -320,7 +334,30 @@ body {
   margin: 6px auto 14px;
 }
 .sheet-content h2 { font-size: 17px; margin: 0 0 4px; }
-.day-summary { color: var(--text-dim); font-size: 13px; margin-bottom: 14px; }
+.day-summary { color: var(--text-dim); font-size: 13px; }
+
+.sheet-day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.sheet-day-nav-title {
+  flex: 1;
+  text-align: center;
+}
+.sheet-day-nav-title .day-summary { margin-bottom: 0; }
+.day-nav-btn {
+  background: var(--gray);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-size: 16px;
+}
 
 /* ---------- Recording list items (shared) ---------- */
 .rec-list { display: flex; flex-direction: column; gap: 10px; }

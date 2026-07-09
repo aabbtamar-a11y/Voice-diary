@@ -17,9 +17,12 @@ const dayDetailTitle = document.getElementById('dayDetailTitle');
 const dayDetailSummary = document.getElementById('dayDetailSummary');
 const dayDetailList = document.getElementById('dayDetailList');
 const dayDetailClose = document.getElementById('dayDetailClose');
+const dayDetailPrev = document.getElementById('dayDetailPrev');
+const dayDetailNext = document.getElementById('dayDetailNext');
 
 let mode = 'month';
 let anchorDate = new Date();
+let selectedDate = null;
 
 function startOfWeek(date) {
   const d = new Date(date);
@@ -59,6 +62,7 @@ function renderMonth(totals) {
   }
 
   const today = dayKeyOf(new Date());
+  const selectedKey = selectedDate ? dayKeyOf(selectedDate) : null;
 
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day);
@@ -67,6 +71,7 @@ function renderMonth(totals) {
     const cell = document.createElement('button');
     cell.className = `cal-day ${dayLevel(total)}`;
     if (key === today) cell.classList.add('today');
+    if (key === selectedKey) cell.classList.add('selected');
     cell.textContent = String(day);
     cell.addEventListener('click', () => openDayDetail(date));
     calGrid.appendChild(cell);
@@ -82,6 +87,7 @@ function renderWeek(totals) {
 
   calGrid.innerHTML = '';
   const today = dayKeyOf(new Date());
+  const selectedKey = selectedDate ? dayKeyOf(selectedDate) : null;
 
   for (let i = 0; i < 7; i++) {
     const date = new Date(start);
@@ -92,7 +98,8 @@ function renderWeek(totals) {
 
     const card = document.createElement('div');
     card.className = 'week-day-card';
-    if (key === today) card.style.boxShadow = 'inset 0 0 0 2px #fff';
+    if (key === today) card.classList.add('today');
+    if (key === selectedKey) card.classList.add('selected');
 
     const bar = document.createElement('div');
     bar.className = `bar ${level}`;
@@ -120,7 +127,7 @@ function renderWeek(totals) {
   }
 }
 
-async function openDayDetail(date) {
+async function renderSheetBody(date) {
   const key = dayKeyOf(date);
   const recs = await getRecordingsByDay(key);
   const total = recs.reduce((sum, r) => sum + r.durationSec, 0);
@@ -134,8 +141,23 @@ async function openDayDetail(date) {
   for (const rec of recs) {
     dayDetailList.appendChild(createRecItemElement(rec));
   }
+}
 
+async function openDayDetail(date) {
+  selectedDate = date;
+  render();
+  await renderSheetBody(date);
   dayDetail.classList.remove('hidden');
+}
+
+async function navigateDay(delta) {
+  if (!selectedDate) return;
+  const newDate = new Date(selectedDate);
+  newDate.setDate(newDate.getDate() + delta);
+  selectedDate = newDate;
+  anchorDate = new Date(newDate);
+  render();
+  await renderSheetBody(newDate);
 }
 
 function closeDayDetail() {
@@ -168,6 +190,8 @@ calNext.addEventListener('click', () => {
 });
 dayDetailClose.addEventListener('click', closeDayDetail);
 dayDetail.querySelector('.sheet-backdrop').addEventListener('click', closeDayDetail);
+dayDetailPrev.addEventListener('click', () => navigateDay(-1));
+dayDetailNext.addEventListener('click', () => navigateDay(1));
 
 export function initCalendarView() {
   render();
