@@ -1,4 +1,5 @@
 import './recorder.js';
+import './challenges.js';
 import { initCalendarView, refreshCalendarView } from './calendarView.js';
 import { renderListView } from './listView.js';
 

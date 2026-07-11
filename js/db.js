@@ -1,6 +1,7 @@
 const DB_NAME = 'voiceDiaryDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE = 'recordings';
+const CHALLENGES_STORE = 'challenges';
 
 let dbPromise = null;
 
@@ -14,6 +15,9 @@ function openDB() {
         const store = db.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
         store.createIndex('dayKey', 'dayKey', { unique: false });
         store.createIndex('timestamp', 'timestamp', { unique: false });
+      }
+      if (!db.objectStoreNames.contains(CHALLENGES_STORE)) {
+        db.createObjectStore(CHALLENGES_STORE, { keyPath: 'dayKey' });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -112,6 +116,48 @@ export async function deleteRecording(id) {
     const tx = db.transaction(STORE, 'readwrite');
     const req = tx.objectStore(STORE).delete(id);
     req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getChallenge(dayKey) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CHALLENGES_STORE, 'readonly');
+    const req = tx.objectStore(CHALLENGES_STORE).get(dayKey);
+    req.onsuccess = () => resolve(req.result || { dayKey, eye: false, fitness: false });
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function setChallenge(dayKey, changes) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CHALLENGES_STORE, 'readwrite');
+    const store = tx.objectStore(CHALLENGES_STORE);
+    const getReq = store.get(dayKey);
+    getReq.onsuccess = () => {
+      const current = getReq.result || { dayKey, eye: false, fitness: false };
+      const updated = { ...current, ...changes };
+      const putReq = store.put(updated);
+      putReq.onsuccess = () => resolve(updated);
+      putReq.onerror = () => reject(putReq.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+}
+
+// Returns a map: dayKey -> { eye, fitness }
+export async function getAllChallenges() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(CHALLENGES_STORE, 'readonly');
+    const req = tx.objectStore(CHALLENGES_STORE).getAll();
+    req.onsuccess = () => {
+      const map = {};
+      for (const c of req.result) map[c.dayKey] = c;
+      resolve(map);
+    };
     req.onerror = () => reject(req.error);
   });
 }

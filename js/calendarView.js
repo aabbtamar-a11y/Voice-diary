@@ -1,4 +1,4 @@
-import { getDailyTotals, getRecordingsByDay } from './db.js';
+import { getDailyTotals, getRecordingsByDay, getAllChallenges } from './db.js';
 import { createRecItemElement } from './recItem.js';
 import {
   WEEKDAY_NAMES, WEEKDAY_SHORT, MONTH_NAMES,
@@ -33,11 +33,24 @@ function startOfWeek(date) {
 
 async function render() {
   const totals = await getDailyTotals();
-  if (mode === 'month') renderMonth(totals);
-  else renderWeek(totals);
+  const challenges = await getAllChallenges();
+  if (mode === 'month') renderMonth(totals, challenges);
+  else renderWeek(totals, challenges);
 }
 
-function renderMonth(totals) {
+function applyChallengeClasses(el, level, challenge) {
+  if (!challenge) return;
+  if (challenge.eye) el.classList.add('eye-done');
+  if (challenge.fitness) el.classList.add('fitness-done');
+  if (level === 'green' && challenge.eye && challenge.fitness) {
+    const star = document.createElement('span');
+    star.className = 'star-badge';
+    star.textContent = '⭐';
+    el.appendChild(star);
+  }
+}
+
+function renderMonth(totals, challenges) {
   calGrid.className = 'cal-grid';
   calLabel.textContent = `${MONTH_NAMES[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
 
@@ -73,12 +86,13 @@ function renderMonth(totals) {
     if (key === today) cell.classList.add('today');
     if (key === selectedKey) cell.classList.add('selected');
     cell.textContent = String(day);
+    applyChallengeClasses(cell, dayLevel(total), challenges[key]);
     cell.addEventListener('click', () => openDayDetail(date));
     calGrid.appendChild(cell);
   }
 }
 
-function renderWeek(totals) {
+function renderWeek(totals, challenges) {
   calGrid.className = 'cal-grid week-row';
   const start = startOfWeek(anchorDate);
   const end = new Date(start);
@@ -122,6 +136,7 @@ function renderWeek(totals) {
     card.appendChild(bar);
     card.appendChild(info);
     card.appendChild(totalEl);
+    applyChallengeClasses(card, level, challenges[key]);
     card.addEventListener('click', () => openDayDetail(date));
     calGrid.appendChild(card);
   }

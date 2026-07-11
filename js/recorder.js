@@ -22,6 +22,32 @@ let segmentStart = 0;
 let tickHandle = null;
 let recordStartDate = null;
 let pendingRecordId = null;
+let wakeLock = null;
+
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch (err) {
+    // e.g. blocked by low-power mode — nothing we can do about it
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
+
+// The OS releases the wake lock whenever the page is hidden; re-acquire it
+// when the user comes back while still recording/paused.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state !== 'idle' && !wakeLock) {
+    acquireWakeLock();
+  }
+});
 
 function pickMimeType() {
   const candidates = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'];
@@ -71,6 +97,8 @@ async function startRecording() {
   accumulatedMs = 0;
   segmentStart = Date.now();
   state = 'recording';
+
+  acquireWakeLock();
 
   btnRecord.classList.add('recording');
   activeControls.classList.remove('hidden');
@@ -151,6 +179,7 @@ async function onRecorderStop() {
 }
 
 function resetToIdle() {
+  releaseWakeLock();
   state = 'idle';
   accumulatedMs = 0;
   timerDisplay.textContent = '00:00';

@@ -8,6 +8,7 @@
   --card: #1c1c1e;
   --text-dim: #8e8e93;
   --accent: #0a84ff;
+  --green-dark: #1e7e34;
   color-scheme: dark;
 }
 
@@ -124,6 +125,50 @@ body {
   color: var(--text-dim);
   font-size: 13px;
 }
+
+.challenges {
+  margin: 40px auto 0;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.challenge-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: #fff;
+  font-size: 14px;
+  width: 100%;
+}
+.challenge-icon { font-size: 20px; }
+.challenge-label { flex: 1; text-align: right; }
+.challenge-switch {
+  width: 46px;
+  height: 26px;
+  border-radius: 13px;
+  background: #3a3a3c;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.challenge-switch::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.challenge-toggle.active .challenge-switch { background: var(--green); }
+.challenge-toggle.active .challenge-switch::before { transform: translateX(-20px); }
 
 .hidden { display: none !important; }
 
@@ -270,6 +315,18 @@ body {
 .cal-day.selected.today {
   box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 5px #fff;
 }
+.cal-day.eye-done { border: 3px solid var(--green-dark); }
+.cal-day.fitness-done {
+  color: var(--green);
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+.star-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 12px;
+  line-height: 1;
+}
 
 /* week view */
 .week-row {
@@ -285,12 +342,16 @@ body {
   border-radius: 12px;
   padding: 12px 14px;
   box-shadow: none;
+  position: relative;
 }
 .week-day-card.today { box-shadow: inset 0 0 0 2px #fff; }
 .week-day-card.selected { box-shadow: inset 0 0 0 3px var(--accent); }
 .week-day-card.selected.today {
   box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 5px #fff;
 }
+.week-day-card.eye-done { border: 3px solid var(--green-dark); }
+.week-day-card.fitness-done .wd-name { color: var(--green); }
+.week-day-card .star-badge { top: -6px; right: -6px; font-size: 14px; }
 .week-day-card .bar {
   width: 8px;
   align-self: stretch;
