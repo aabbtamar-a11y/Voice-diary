@@ -31,86 +31,82 @@ function formatMinSec(totalSeconds) {
   return `${m}:${pad2(s)}`;
 }
 
-function setupChallenge(key, switchBtn, timerBtn) {
+// States: idle -> running -> unlocked -> done -> unlocked -> done ...
+function setupChallenge(key, card, btn) {
+  let state = 'idle';
   let remaining = TIMER_SECONDS;
   let intervalId = null;
-  let unlockedToday = false;
 
-  function renderIdle() {
-    timerBtn.textContent = '▶ הפעילי טיימר 5 דק׳';
-    timerBtn.disabled = false;
-    timerBtn.classList.remove('hidden');
+  function render() {
+    card.classList.toggle('done', state === 'done');
+    btn.classList.remove('running', 'unlocked', 'done');
+    if (state === 'idle') {
+      btn.textContent = `▶ ${formatMinSec(TIMER_SECONDS)}`;
+    } else if (state === 'running') {
+      btn.classList.add('running');
+      btn.textContent = `⏹ ${formatMinSec(remaining)}`;
+    } else if (state === 'unlocked') {
+      btn.classList.add('unlocked');
+      btn.textContent = '✓ סמני';
+    } else if (state === 'done') {
+      btn.classList.add('done');
+      btn.textContent = '✓ בוצע!';
+    }
   }
 
-  function renderRunning() {
-    timerBtn.textContent = `⏱ ${formatMinSec(remaining)}`;
-    timerBtn.disabled = true;
-  }
-
-  function renderUnlocked() {
-    timerBtn.classList.add('hidden');
-  }
-
-  function lockSwitch(locked) {
-    switchBtn.disabled = locked;
-  }
-
-  function unlock() {
-    unlockedToday = true;
-    lockSwitch(false);
-    renderUnlocked();
+  function stopTimer() {
+    if (intervalId) clearInterval(intervalId);
+    intervalId = null;
   }
 
   function startTimer() {
-    if (intervalId) return;
     remaining = TIMER_SECONDS;
-    renderRunning();
+    state = 'running';
+    render();
     intervalId = setInterval(() => {
       remaining -= 1;
       if (remaining <= 0) {
-        clearInterval(intervalId);
-        intervalId = null;
-        unlock();
+        stopTimer();
+        state = 'unlocked';
+        render();
         playChime();
       } else {
-        renderRunning();
+        render();
       }
     }, 1000);
   }
 
-  timerBtn.addEventListener('click', startTimer);
-
-  switchBtn.addEventListener('click', async () => {
-    const isActive = switchBtn.classList.toggle('active');
-    await setChallenge(todayKey(), { [key]: isActive });
-    document.dispatchEvent(new CustomEvent('recording-saved'));
+  btn.addEventListener('click', async () => {
+    if (state === 'idle') {
+      startTimer();
+    } else if (state === 'running') {
+      stopTimer();
+      state = 'idle';
+      render();
+    } else if (state === 'unlocked') {
+      state = 'done';
+      render();
+      await setChallenge(todayKey(), { [key]: true });
+      document.dispatchEvent(new CustomEvent('recording-saved'));
+    } else if (state === 'done') {
+      state = 'unlocked';
+      render();
+      await setChallenge(todayKey(), { [key]: false });
+      document.dispatchEvent(new CustomEvent('recording-saved'));
+    }
   });
 
   return {
     async init() {
       const today = await getChallenge(todayKey());
-      const done = !!today[key];
-      switchBtn.classList.toggle('active', done);
-      if (done) {
-        unlock();
-      } else {
-        lockSwitch(true);
-        renderIdle();
-      }
+      state = today[key] ? 'done' : 'idle';
+      render();
     },
   };
 }
 
-const eyesController = setupChallenge(
-  'eye',
-  document.getElementById('switchEyes'),
-  document.getElementById('timerEyes')
-);
-const fitnessController = setupChallenge(
-  'fitness',
-  document.getElementById('switchFitness'),
-  document.getElementById('timerFitness')
-);
+const eyesController = setupChallenge('eye', document.getElementById('cardEyes'), document.getElementById('btnEyes'));
+const fitnessController = setupChallenge('fitness', document.getElementById('cardFitness'), document.getElementById('btnFitness'));
 
 eyesController.init();
 fitnessController.init();
