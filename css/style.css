@@ -133,27 +133,38 @@ body {
   flex-direction: column;
   gap: 10px;
 }
-.challenge-toggle {
+.challenge-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.challenge-top {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--card);
-  border: none;
-  border-radius: 12px;
-  padding: 14px 16px;
-  color: #fff;
-  font-size: 14px;
-  width: 100%;
 }
 .challenge-icon { font-size: 20px; }
-.challenge-label { flex: 1; text-align: right; }
+.challenge-label { flex: 1; text-align: right; color: #fff; font-size: 14px; }
+
+.challenge-switch-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.challenge-switch-btn:disabled { opacity: 0.35; }
+
 .challenge-switch {
   width: 46px;
   height: 26px;
   border-radius: 13px;
   background: #3a3a3c;
   position: relative;
-  flex-shrink: 0;
+  display: block;
   transition: background 0.2s;
 }
 .challenge-switch::before {
@@ -167,8 +178,21 @@ body {
   background: #fff;
   transition: transform 0.2s;
 }
-.challenge-toggle.active .challenge-switch { background: var(--green); }
-.challenge-toggle.active .challenge-switch::before { transform: translateX(-20px); }
+.challenge-switch-btn.active .challenge-switch { background: var(--green); }
+.challenge-switch-btn.active .challenge-switch::before { transform: translateX(-20px); }
+
+.challenge-timer-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #2c2c2e;
+  color: var(--accent);
+  width: 100%;
+}
+.challenge-timer-btn:disabled { color: var(--text-dim); }
+.challenge-timer-btn.hidden { display: none; }
 
 .hidden { display: none !important; }
 
