@@ -1,5 +1,6 @@
 import { getChallenge, setChallenge } from './db.js';
 import { dayKeyOf, pad2 } from './utils.js';
+import { requestWakeLock, releaseWakeLock } from './wakeLock.js';
 
 const TIMER_SECONDS = 3 * 60;
 
@@ -58,14 +59,18 @@ function setupChallenge(key, card, btn) {
   }
 
   function stopTimer() {
-    if (intervalId) clearInterval(intervalId);
-    intervalId = null;
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+      releaseWakeLock();
+    }
   }
 
   function startTimer() {
     remaining = TIMER_SECONDS;
     state = 'running';
     render();
+    requestWakeLock();
     intervalId = setInterval(() => {
       remaining -= 1;
       if (remaining <= 0) {

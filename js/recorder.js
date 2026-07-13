@@ -1,5 +1,6 @@
 import { addRecording } from './db.js';
 import { dayKeyOf, formatClock, autoTitle, toast } from './utils.js';
+import { requestWakeLock, releaseWakeLock } from './wakeLock.js';
 
 const btnRecord = document.getElementById('btnRecord');
 const btnPause = document.getElementById('btnPause');
@@ -22,32 +23,6 @@ let segmentStart = 0;
 let tickHandle = null;
 let recordStartDate = null;
 let pendingRecordId = null;
-let wakeLock = null;
-
-async function acquireWakeLock() {
-  if (!('wakeLock' in navigator)) return;
-  try {
-    wakeLock = await navigator.wakeLock.request('screen');
-    wakeLock.addEventListener('release', () => { wakeLock = null; });
-  } catch (err) {
-    // e.g. blocked by low-power mode — nothing we can do about it
-  }
-}
-
-function releaseWakeLock() {
-  if (wakeLock) {
-    wakeLock.release().catch(() => {});
-    wakeLock = null;
-  }
-}
-
-// The OS releases the wake lock whenever the page is hidden; re-acquire it
-// when the user comes back while still recording/paused.
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && state !== 'idle' && !wakeLock) {
-    acquireWakeLock();
-  }
-});
 
 function pickMimeType() {
   const candidates = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'];
@@ -98,7 +73,7 @@ async function startRecording() {
   segmentStart = Date.now();
   state = 'recording';
 
-  acquireWakeLock();
+  requestWakeLock();
 
   btnRecord.classList.add('recording');
   activeControls.classList.remove('hidden');
