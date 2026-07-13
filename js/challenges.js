@@ -8,10 +8,31 @@ function todayKey() {
   return dayKeyOf(new Date());
 }
 
-function playChime(times = 1) {
+// Created lazily inside a real click handler (a user gesture) so iOS/Safari
+// allows it to play later from setInterval callbacks too. Reused across
+// both challenges and every chime instead of making a fresh context per beep.
+let sharedAudioCtx = null;
+
+function unlockAudio() {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
-  const ctx = new AudioCtx();
+  if (!sharedAudioCtx) sharedAudioCtx = new AudioCtx();
+  if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+  // Play a near-silent blip right now, inside the click gesture — some iOS
+  // versions only fully unlock audio once a sound has actually started,
+  // not just when the context is created/resumed.
+  const osc = sharedAudioCtx.createOscillator();
+  const gain = sharedAudioCtx.createGain();
+  gain.gain.value = 0.0001;
+  osc.connect(gain);
+  gain.connect(sharedAudioCtx.destination);
+  osc.start();
+  osc.stop(sharedAudioCtx.currentTime + 0.01);
+}
+
+function playChime(times = 1) {
+  const ctx = sharedAudioCtx;
+  if (!ctx) return;
   for (let i = 0; i < times; i++) {
     const start = ctx.currentTime + i * 0.35;
     const osc = ctx.createOscillator();
@@ -26,7 +47,6 @@ function playChime(times = 1) {
     osc.start(start);
     osc.stop(start + 0.35);
   }
-  setTimeout(() => ctx.close(), times * 350 + 200);
 }
 
 function formatMinSec(totalSeconds) {
@@ -67,6 +87,7 @@ function setupChallenge(key, card, btn) {
   }
 
   function startTimer() {
+    unlockAudio();
     remaining = TIMER_SECONDS;
     state = 'running';
     render();
