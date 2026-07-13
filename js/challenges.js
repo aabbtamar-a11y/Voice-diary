@@ -1,28 +1,31 @@
 import { getChallenge, setChallenge } from './db.js';
 import { dayKeyOf, pad2 } from './utils.js';
 
-const TIMER_SECONDS = 5 * 60;
+const TIMER_SECONDS = 3 * 60;
 
 function todayKey() {
   return dayKeyOf(new Date());
 }
 
-function playChime() {
+function playChime(times = 1) {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
   const ctx = new AudioCtx();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.value = 880;
-  gain.gain.setValueAtTime(0, ctx.currentTime);
-  gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.08);
-  gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.9);
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start();
-  osc.stop(ctx.currentTime + 0.95);
-  osc.onended = () => ctx.close();
+  for (let i = 0; i < times; i++) {
+    const start = ctx.currentTime + i * 0.35;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(0.12, start + 0.05);
+    gain.gain.linearRampToValueAtTime(0, start + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.35);
+  }
+  setTimeout(() => ctx.close(), times * 350 + 200);
 }
 
 function formatMinSec(totalSeconds) {
@@ -69,9 +72,10 @@ function setupChallenge(key, card, btn) {
         stopTimer();
         state = 'unlocked';
         render();
-        playChime();
+        playChime(2);
       } else {
         render();
+        if (remaining % 60 === 0) playChime(1);
       }
     }, 1000);
   }

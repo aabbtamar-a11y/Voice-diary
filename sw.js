@@ -1,4 +1,4 @@
-const CACHE_NAME = 'voice-diary-v6';
+const CACHE_NAME = 'voice-diary-v7';
 const ASSETS = [
   './',
   './index.html',
