@@ -1,6 +1,7 @@
 import { addRecording } from './db.js';
 import { dayKeyOf, formatClock, autoTitle, toast } from './utils.js';
 import { requestWakeLock, releaseWakeLock } from './wakeLock.js';
+import { startPromptRotation, stopPromptRotation } from './prompts.js';
 
 const btnRecord = document.getElementById('btnRecord');
 const btnPause = document.getElementById('btnPause');
@@ -8,6 +9,7 @@ const btnStop = document.getElementById('btnStop');
 const activeControls = document.getElementById('activeControls');
 const timerDisplay = document.getElementById('timerDisplay');
 const statusLine = document.getElementById('statusLine');
+const promptLine = document.getElementById('promptLine');
 
 const postSave = document.getElementById('postSave');
 const postSaveTitle = document.getElementById('postSaveTitle');
@@ -74,6 +76,7 @@ async function startRecording() {
   state = 'recording';
 
   requestWakeLock();
+  startPromptRotation(promptLine);
 
   btnRecord.classList.add('recording');
   activeControls.classList.remove('hidden');
@@ -155,6 +158,7 @@ async function onRecorderStop() {
 
 function resetToIdle() {
   releaseWakeLock();
+  stopPromptRotation();
   state = 'idle';
   accumulatedMs = 0;
   timerDisplay.textContent = '00:00';
