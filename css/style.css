@@ -9,6 +9,7 @@
   --text-dim: #8e8e93;
   --accent: #0a84ff;
   --green-dark: #1e7e34;
+  --gold: #d4af37;
   color-scheme: dark;
 }
 
@@ -183,6 +184,56 @@ body {
 }
 .challenge-card-btn.done { background: var(--green); color: #04220b; }
 
+.gratitude-btn {
+  display: block;
+  margin: 14px auto 0;
+  width: 100%;
+  max-width: 320px;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--card);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.gratitude-btn span {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.gratitude-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+.gratitude-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2c2c2e;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13px;
+}
+.gratitude-item span { flex: 1; }
+.gratitude-item button {
+  border: none;
+  background: none;
+  color: var(--red);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.gratitude-empty {
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: center;
+  padding: 8px 0;
+}
+
 .hidden { display: none !important; }
 
 /* ---------- Post-save panel ---------- */
@@ -333,6 +384,11 @@ body {
   color: var(--green);
   text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
+.cal-day.all-done { background: var(--gold); }
+.cal-day.all-done.fitness-done {
+  color: #3a2c00;
+  text-shadow: none;
+}
 .star-badge {
   position: absolute;
   top: -6px;
@@ -340,6 +396,17 @@ body {
   font-size: 12px;
   line-height: 1;
 }
+
+.day-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+.day-number.gratitude-gold { border-color: var(--gold); }
 
 /* week view */
 .week-row {
@@ -364,6 +431,8 @@ body {
 }
 .week-day-card.eye-done { border: 3px solid var(--green-dark); }
 .week-day-card.fitness-done .wd-name { color: var(--green); }
+.week-day-card.all-done { background: #3a2f0d; border-color: var(--gold); }
+.week-day-card .wd-date.gratitude-gold { color: var(--gold); font-weight: 700; }
 .week-day-card .star-badge { top: -6px; right: -6px; font-size: 14px; }
 .week-day-card .bar {
   width: 8px;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'voice-diary-v10';
+const CACHE_NAME = 'voice-diary-v11';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ const ASSETS = [
   './js/challenges.js',
   './js/wakeLock.js',
   './js/prompts.js',
+  './js/gratitude.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-180.png',

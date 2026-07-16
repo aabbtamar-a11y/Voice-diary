@@ -59,12 +59,27 @@
       </div>
     </div>
 
+    <button id="btnGratitude" class="gratitude-btn">
+      🙏 הודיות היום <span id="gratitudeCount">0</span>
+    </button>
+
     <!-- shown right after saving a recording -->
     <div id="postSave" class="post-save hidden">
       <div class="post-save-card">
         <div class="post-save-title" id="postSaveTitle"></div>
         <input type="text" id="postSaveNotes" placeholder="הוסיפי כותרת / הערה (לא חובה)">
         <button id="postSaveDone" class="btn-primary">סיימתי</button>
+      </div>
+    </div>
+
+    <!-- gratitude entries for today -->
+    <div id="gratitudeModal" class="post-save hidden">
+      <div class="post-save-card">
+        <div class="post-save-title">הודיות של היום</div>
+        <div id="gratitudeList" class="gratitude-list"></div>
+        <input type="text" id="gratitudeInput" placeholder="על מה את מודה עכשיו?">
+        <button id="gratitudeAdd" class="btn-primary">הוסיפי</button>
+        <button id="gratitudeClose" class="btn-secondary">סגירה</button>
       </div>
     </div>
   </section>

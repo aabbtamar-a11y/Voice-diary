@@ -1,4 +1,4 @@
-import { getDailyTotals, getRecordingsByDay, getAllChallenges } from './db.js';
+import { getDailyTotals, getRecordingsByDay, getAllChallenges, getAllGratitudeCounts } from './db.js';
 import { createRecItemElement } from './recItem.js';
 import {
   WEEKDAY_NAMES, WEEKDAY_SHORT, MONTH_NAMES,
@@ -31,11 +31,14 @@ function startOfWeek(date) {
   return d;
 }
 
+const GRATITUDE_GOLD_THRESHOLD = 3;
+
 async function render() {
   const totals = await getDailyTotals();
   const challenges = await getAllChallenges();
-  if (mode === 'month') renderMonth(totals, challenges);
-  else renderWeek(totals, challenges);
+  const gratitudeCounts = await getAllGratitudeCounts();
+  if (mode === 'month') renderMonth(totals, challenges, gratitudeCounts);
+  else renderWeek(totals, challenges, gratitudeCounts);
 }
 
 function applyChallengeClasses(el, level, challenge) {
@@ -43,6 +46,7 @@ function applyChallengeClasses(el, level, challenge) {
   if (challenge.eye) el.classList.add('eye-done');
   if (challenge.fitness) el.classList.add('fitness-done');
   if (level === 'green' && challenge.eye && challenge.fitness) {
+    el.classList.add('all-done');
     const star = document.createElement('span');
     star.className = 'star-badge';
     star.textContent = '⭐';
@@ -50,7 +54,7 @@ function applyChallengeClasses(el, level, challenge) {
   }
 }
 
-function renderMonth(totals, challenges) {
+function renderMonth(totals, challenges, gratitudeCounts) {
   calGrid.className = 'cal-grid';
   calLabel.textContent = `${MONTH_NAMES[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
 
@@ -85,14 +89,22 @@ function renderMonth(totals, challenges) {
     cell.className = `cal-day ${dayLevel(total)}`;
     if (key === today) cell.classList.add('today');
     if (key === selectedKey) cell.classList.add('selected');
-    cell.textContent = String(day);
+
+    const numberSpan = document.createElement('span');
+    numberSpan.className = 'day-number';
+    numberSpan.textContent = String(day);
+    if ((gratitudeCounts[key] || 0) >= GRATITUDE_GOLD_THRESHOLD) {
+      numberSpan.classList.add('gratitude-gold');
+    }
+    cell.appendChild(numberSpan);
+
     applyChallengeClasses(cell, dayLevel(total), challenges[key]);
     cell.addEventListener('click', () => openDayDetail(date));
     calGrid.appendChild(cell);
   }
 }
 
-function renderWeek(totals, challenges) {
+function renderWeek(totals, challenges, gratitudeCounts) {
   calGrid.className = 'cal-grid week-row';
   const start = startOfWeek(anchorDate);
   const end = new Date(start);
@@ -126,6 +138,9 @@ function renderWeek(totals, challenges) {
     const dateEl = document.createElement('div');
     dateEl.className = 'wd-date';
     dateEl.textContent = `${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}/${date.getFullYear()}`;
+    if ((gratitudeCounts[key] || 0) >= GRATITUDE_GOLD_THRESHOLD) {
+      dateEl.classList.add('gratitude-gold');
+    }
     info.appendChild(name);
     info.appendChild(dateEl);
 

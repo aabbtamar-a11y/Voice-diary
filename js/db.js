@@ -1,7 +1,8 @@
 const DB_NAME = 'voiceDiaryDB';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE = 'recordings';
 const CHALLENGES_STORE = 'challenges';
+const GRATITUDE_STORE = 'gratitudes';
 
 let dbPromise = null;
 
@@ -18,6 +19,10 @@ function openDB() {
       }
       if (!db.objectStoreNames.contains(CHALLENGES_STORE)) {
         db.createObjectStore(CHALLENGES_STORE, { keyPath: 'dayKey' });
+      }
+      if (!db.objectStoreNames.contains(GRATITUDE_STORE)) {
+        const store = db.createObjectStore(GRATITUDE_STORE, { keyPath: 'id', autoIncrement: true });
+        store.createIndex('dayKey', 'dayKey', { unique: false });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -157,6 +162,52 @@ export async function getAllChallenges() {
       const map = {};
       for (const c of req.result) map[c.dayKey] = c;
       resolve(map);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export function addGratitude(dayKey, text) {
+  return new Promise(async (resolve, reject) => {
+    const db = await openDB();
+    const tx = db.transaction(GRATITUDE_STORE, 'readwrite');
+    const req = tx.objectStore(GRATITUDE_STORE).add({ dayKey, text, timestamp: Date.now() });
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getGratitudesByDay(dayKey) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(GRATITUDE_STORE, 'readonly');
+    const idx = tx.objectStore(GRATITUDE_STORE).index('dayKey');
+    const req = idx.getAll(dayKey);
+    req.onsuccess = () => resolve(req.result.sort((a, b) => a.timestamp - b.timestamp));
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function deleteGratitude(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(GRATITUDE_STORE, 'readwrite');
+    const req = tx.objectStore(GRATITUDE_STORE).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// Returns a map: dayKey -> gratitude count
+export async function getAllGratitudeCounts() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(GRATITUDE_STORE, 'readonly');
+    const req = tx.objectStore(GRATITUDE_STORE).getAll();
+    req.onsuccess = () => {
+      const counts = {};
+      for (const g of req.result) counts[g.dayKey] = (counts[g.dayKey] || 0) + 1;
+      resolve(counts);
     };
     req.onerror = () => reject(req.error);
   });
